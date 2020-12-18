@@ -1,0 +1,31 @@
+app: databroker
+app_info:
+  container: application
+  deployment: single
+  description: Databroker app to collect data from  applications and send to Cloud
+  node_types:
+  - MEN
+  targets:
+  - vhx09-10
+  type: app
+  version: 2.0.1
+  view: 9100
+docker:
+  ports:
+    publish:
+    - 9060:9060
+  secure:
+    arg:
+      licenses: []
+      partner_features: []
+    label:
+      devices: []
+      features: []
+      unauth_host: true
+      uuid: 9EDDB762-AB9F-4EE4-B842-A4710425B610
+      volumes:
+        offers: []
+        persists:
+        - databrokerpv
+        requests: []
+version: 2

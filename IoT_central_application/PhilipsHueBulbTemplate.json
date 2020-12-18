@@ -1,0 +1,189 @@
+{
+  "@id": "urn:veeazigbeeappdemo:PhilipsHueBulbTemplate_2k5:1",
+  "@type": "CapabilityModel",
+  "implements": [
+    {
+      "@id": "urn:veeazigbeeappdemo:PhilipsHueBulbTemplate_2k5:oleavy_iz:1",
+      "@type": "InterfaceInstance",
+      "displayName": {
+        "en": "Device Information"
+      },
+      "name": "PhilipsHueBulbTemplate_51c",
+      "schema": {
+        "@id": "urn:veeazigbeeappdemo:PhilipsHueBulbTemplate_51c:1",
+        "@type": "Interface",
+        "displayName": {
+          "en": "Device Information"
+        },
+        "contents": [
+		{
+            "@id": "urn:veeazigbeeappdemo:PhilipsHueBulbTemplate_51c:hub:1",
+            "@type": "Telemetry",
+            "displayName": {
+              "en": "Hub Name"
+            },
+            "name": "hub",
+            "schema": "string"
+          },
+          {
+            "@id": "urn:veeazigbeeappdemo:PhilipsHueBulbTemplate_51c:mac:1",
+            "@type": "Telemetry",
+            "displayName": {
+              "en": "Mac Address"
+            },
+            "name": "mac",
+            "schema": "string"
+          }
+        ]
+      }
+    },
+    {
+      "@id": "urn:veeazigbeeappdemo:PhilipsHueBulbTemplate_2k5:iws1ewv4k:1",
+      "@type": "InterfaceInstance",
+      "displayName": {
+        "en": "Telemetry"
+      },
+      "name": "PhilipsHueBulbTemplate_37t",
+      "schema": {
+        "@id": "urn:veeazigbeeappdemo:PhilipsHueBulbTemplate_37t:1",
+        "@type": "Interface",
+        "displayName": {
+          "en": "Telemetry"
+        },
+        "contents": [
+          {
+            "@id": "urn:veeazigbeeappdemo:PhilipsHueBulbTemplate_37t:on_off:1",
+            "@type": "Telemetry",
+            "displayName": {
+              "en": "Bulb Status"
+            },
+            "name": "on_off",
+            "schema": {
+              "@id": "urn:veeazigbeeappdemo:PhilipsHueBulbTemplate_37t:on_off:z958mheom:1",
+              "@type": "Enum",
+              "displayName": {
+                "en": "Enum"
+              },
+              "valueSchema": "integer",
+              "enumValues": [
+                {
+                  "@id": "urn:veeazigbeeappdemo:PhilipsHueBulbTemplate_37t:on_off:z958mheom:On:1",
+                  "@type": "EnumValue",
+                  "displayName": {
+                    "en": "On"
+                  },
+                  "enumValue": 1,
+                  "name": "On"
+                },
+                {
+                  "@id": "urn:veeazigbeeappdemo:PhilipsHueBulbTemplate_37t:on_off:z958mheom:Off:1",
+                  "@type": "EnumValue",
+                  "displayName": {
+                    "en": "Off"
+                  },
+                  "enumValue": 0,
+                  "name": "Off"
+                }
+              ]
+            }
+          },
+          {
+            "@id": "urn:veeazigbeeappdemo:PhilipsHueBulbTemplate_37t:current_level:1",
+            "@type": "Telemetry",
+            "displayName": {
+              "en": "Illumination"
+            },
+            "name": "current_level",
+            "schema": "integer"
+          }
+        ]
+      }
+    },
+    {
+      "@id": "urn:veeazigbeeappdemo:PhilipsHueBulbTemplate_2k5:8_tkfoxwb:1",
+      "@type": "InterfaceInstance",
+      "displayName": {
+        "en": "Commands"
+      },
+      "name": "PhilipsHueBulbTemplate_2tg",
+      "schema": {
+        "@id": "urn:veeazigbeeappdemo:PhilipsHueBulbTemplate_2tg:1",
+        "@type": "Interface",
+        "displayName": {
+          "en": "Commands"
+        },
+        "contents": [
+          {
+            "@id": "urn:veeazigbeeappdemo:PhilipsHueBulbTemplate_2tg:toggle_bulb:1",
+            "@type": "Command",
+            "commandType": "asynchronous",
+            "durable": false,
+            "request": {
+              "@id": "urn:veeazigbeeappdemo:PhilipsHueBulbTemplate_2tg:toggle_bulb:ToggleBulbRequest:1",
+              "@type": "SchemaField",
+              "displayName": {
+                "en": "ToggleBulbRequest"
+              },
+              "name": "ToggleBulbRequest",
+              "schema": {
+                "@id": "urn:veeazigbeeappdemo:PhilipsHueBulbTemplate_2tg:toggle_bulb:ToggleBulbRequest:h_lirsusv:1",
+                "@type": "Object",
+                "displayName": {
+                  "en": "Object"
+                },
+                "fields": [
+                  {
+                    "@id": "urn:veeazigbeeappdemo:PhilipsHueBulbTemplate_2tg:toggle_bulb:ToggleBulbRequest:h_lirsusv:on_off:1",
+                    "@type": "SchemaField",
+                    "displayName": {
+                      "en": "Bulb State"
+                    },
+                    "name": "on_off",
+                    "schema": {
+                      "@id": "urn:veeazigbeeappdemo:PhilipsHueBulbTemplate_2tg:toggle_bulb:ToggleBulbRequest:h_lirsusv:on_off:hxdsbx1ph:1",
+                      "@type": "Enum",
+                      "displayName": {
+                        "en": "Enum"
+                      },
+                      "valueSchema": "string",
+                      "enumValues": [
+                        {
+                          "@id": "urn:veeazigbeeappdemo:PhilipsHueBulbTemplate_2tg:toggle_bulb:ToggleBulbRequest:h_lirsusv:on_off:hxdsbx1ph:On:1",
+                          "@type": "EnumValue",
+                          "displayName": {
+                            "en": "On"
+                          },
+                          "enumValue": "on",
+                          "name": "On"
+                        },
+                        {
+                          "@id": "urn:veeazigbeeappdemo:PhilipsHueBulbTemplate_2tg:toggle_bulb:ToggleBulbRequest:h_lirsusv:on_off:hxdsbx1ph:Off:1",
+                          "@type": "EnumValue",
+                          "displayName": {
+                            "en": "Off"
+                          },
+                          "enumValue": "off",
+                          "name": "Off"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            },
+            "displayName": {
+              "en": "Togglebulb"
+            },
+            "name": "toggle_bulb"
+          }
+        ]
+      }
+    }
+  ],
+  "displayName": {
+    "en": "PhilipsHueBulbTemplate"
+  },
+  "@context": [
+    "http://azureiot.com/v1/contexts/IoTModel.json"
+  ]
+}

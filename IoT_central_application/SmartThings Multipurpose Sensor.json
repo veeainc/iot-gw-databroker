@@ -1,0 +1,80 @@
+{
+  "@id": "urn:veeazigbeeappdemo:SmartThingsMultipurposeSensor_3um:1",
+  "@type": "CapabilityModel",
+  "implements": [
+    {
+      "@id": "urn:veeazigbeeappdemo:SmartThingsMultipurposeSensor_3um:dokscdyjf:1",
+      "@type": "InterfaceInstance",
+      "displayName": {
+        "en": "Device Information"
+      },
+      "name": "SmartThingsMultipurposeSensor_7fz",
+      "schema": {
+        "@id": "urn:veeazigbeeappdemo:SmartThingsMultipurposeSensor_7fz:1",
+        "@type": "Interface",
+        "displayName": {
+          "en": "Device Information"
+        },
+        "contents": [
+          {
+            "@id": "urn:veeazigbeeappdemo:SmartThingsMultipurposeSensor_7fz:mac:1",
+            "@type": "Telemetry",
+            "displayName": {
+              "en": "Mac Address"
+            },
+            "name": "mac",
+            "schema": "string"
+          },
+          {
+            "@id": "urn:veeazigbeeappdemo:SmartThingsMultipurposeSensor_7fz:hub:1",
+            "@type": "Telemetry",
+            "displayName": {
+              "en": "Hub Name"
+            },
+            "name": "hub",
+            "schema": "string"
+          }
+        ]
+      }
+    },
+    {
+      "@id": "urn:veeazigbeeappdemo:SmartThingsMultipurposeSensor_3um:iintxjkk9:1",
+      "@type": "InterfaceInstance",
+      "displayName": {
+        "en": "Telemetry"
+      },
+      "name": "SmartThingsMultipurposeSensor_6h5",
+      "schema": {
+        "@id": "urn:veeazigbeeappdemo:SmartThingsMultipurposeSensor_6h5:1",
+        "@type": "Interface",
+        "displayName": {
+          "en": "Telemetry"
+        },
+        "contents": [
+          {
+            "@id": "urn:veeazigbeeappdemo:SmartThingsMultipurposeSensor_6h5:measured_value:1",
+            "@type": [
+              "Telemetry",
+              "SemanticType/Temperature"
+            ],
+            "displayName": {
+              "en": "Temperature"
+            },
+            "name": "measured_value",
+            "displayUnit": {
+              "en": "°C"
+            },
+            "schema": "double",
+            "unit": "Units/Temperature/celsius"
+          }
+        ]
+      }
+    }
+  ],
+  "displayName": {
+    "en": "SmartThings Multipurpose Sensor"
+  },
+  "@context": [
+    "http://azureiot.com/v1/contexts/IoTModel.json"
+  ]
+}

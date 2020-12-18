@@ -1,0 +1,178 @@
+{
+  "@id": "urn:veeazigbeeappdemo:ZigbeeDeviceTemplate_38kl:1",
+  "@type": "CapabilityModel",
+  "implements": [
+    {
+      "@id": "urn:veeazigbeeappdemo:ZigbeeDeviceTemplate_38kl:_213kglst:1",
+      "@type": "InterfaceInstance",
+      "displayName": {
+        "en": "Device Information"
+      },
+      "name": "ZigbeeDeviceTemplate_2t2",
+      "schema": {
+        "@id": "urn:veeazigbeeappdemo:ZigbeeDeviceTemplate_2t2:1",
+        "@type": "Interface",
+        "displayName": {
+          "en": "Device Information"
+        },
+        "contents": [
+          {
+            "@id": "urn:veeazigbeeappdemo:ZigbeeDeviceTemplate_2t2:hub:1",
+            "@type": "Telemetry",
+            "displayName": {
+              "en": "Hub Name"
+            },
+            "name": "hub",
+            "schema": "string"
+          },
+          {
+            "@id": "urn:veeazigbeeappdemo:ZigbeeDeviceTemplate_2t2:mac:1",
+            "@type": "Telemetry",
+            "displayName": {
+              "en": "Mac Address"
+            },
+            "name": "mac",
+            "schema": "string"
+          }
+        ]
+      }
+    },
+    {
+      "@id": "urn:veeazigbeeappdemo:ZigbeeDeviceTemplate_38kl:pwxxj0gjh:1",
+      "@type": "InterfaceInstance",
+      "displayName": {
+        "en": "Telemetry"
+      },
+      "name": "ZigbeeDeviceTemplate_12r",
+      "schema": {
+        "@id": "urn:veeazigbeeappdemo:ZigbeeDeviceTemplate_12r:1",
+        "@type": "Interface",
+        "displayName": {
+          "en": "Telemetry"
+        },
+        "contents": [
+          {
+            "@id": "urn:veeazigbeeappdemo:ZigbeeDeviceTemplate_12r:on_off:1",
+            "@type": "Telemetry",
+            "displayName": {
+              "en": "Bulb Status"
+            },
+            "name": "on_off",
+            "schema": "integer"
+          },
+          {
+            "@id": "urn:veeazigbeeappdemo:ZigbeeDeviceTemplate_12r:current_level:1",
+            "@type": "Telemetry",
+            "displayName": {
+              "en": "Illumination"
+            },
+            "name": "current_level",
+            "schema": "integer"
+          },
+          {
+            "@id": "urn:veeazigbeeappdemo:ZigbeeDeviceTemplate_12r:measured_value:1",
+            "@type": [
+              "Telemetry",
+              "SemanticType/Temperature"
+            ],
+            "displayName": {
+              "en": "Temperature"
+            },
+            "name": "measured_value",
+            "displayUnit": {
+              "en": "°C"
+            },
+            "schema": "double",
+            "unit": "Units/Temperature/celsius"
+          }
+        ]
+      }
+    },
+    {
+      "@id": "urn:veeazigbeeappdemo:ZigbeeDeviceTemplate_38kl:ivry_a1ma:2",
+      "@type": "InterfaceInstance",
+      "displayName": {
+        "en": "Commands"
+      },
+      "name": "ZigbeeDeviceTemplateV2_2h",
+      "schema": {
+        "@id": "urn:veeazigbeeappdemo:ZigbeeDeviceTemplateV2_2h:1",
+        "@type": "Interface",
+        "displayName": {
+          "en": "Commands"
+        },
+        "contents": [
+          {
+            "@id": "urn:veeazigbeeappdemo:ZigbeeDeviceTemplateV2_2h:toggle_bulb:1",
+            "@type": "Command",
+            "commandType": "asynchronous",
+            "durable": false,
+            "request": {
+              "@id": "urn:veeazigbeeappdemo:ZigbeeDeviceTemplateV2_2h:toggle_bulb:ToggleBulbRequest:1",
+              "@type": "SchemaField",
+              "displayName": {
+                "en": "ToggleBulbRequest"
+              },
+              "name": "ToggleBulbRequest",
+              "schema": {
+                "@id": "urn:veeazigbeeappdemo:ZigbeeDeviceTemplateV2_2h:toggle_bulb:ToggleBulbRequest:fdclmhsb6:1",
+                "@type": "Object",
+                "displayName": {
+                  "en": "Object"
+                },
+                "fields": [
+                  {
+                    "@id": "urn:veeazigbeeappdemo:ZigbeeDeviceTemplateV2_2h:toggle_bulb:ToggleBulbRequest:fdclmhsb6:on_off:1",
+                    "@type": "SchemaField",
+                    "displayName": {
+                      "en": "Bulb State"
+                    },
+                    "name": "on_off",
+                    "schema": {
+                      "@id": "urn:veeazigbeeappdemo:ZigbeeDeviceTemplateV2_2h:toggle_bulb:ToggleBulbRequest:fdclmhsb6:on_off:hxdsbx1ph:1",
+                      "@type": "Enum",
+                      "displayName": {
+                        "en": "Enum"
+                      },
+                      "valueSchema": "string",
+                      "enumValues": [
+                        {
+                          "@id": "urn:veeazigbeeappdemo:ZigbeeDeviceTemplateV2_2h:toggle_bulb:ToggleBulbRequest:fdclmhsb6:on_off:hxdsbx1ph:On:1",
+                          "@type": "EnumValue",
+                          "displayName": {
+                            "en": "On"
+                          },
+                          "enumValue": "on",
+                          "name": "On"
+                        },
+                        {
+                          "@id": "urn:veeazigbeeappdemo:ZigbeeDeviceTemplateV2_2h:toggle_bulb:ToggleBulbRequest:fdclmhsb6:on_off:hxdsbx1ph:Off:1",
+                          "@type": "EnumValue",
+                          "displayName": {
+                            "en": "Off"
+                          },
+                          "enumValue": "off",
+                          "name": "Off"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            },
+            "displayName": {
+              "en": "togglebulb"
+            },
+            "name": "toggle_bulb"
+          }
+        ]
+      }
+    }
+  ],
+  "displayName": {
+    "en": "ZigbeeDeviceTemplate"
+  },
+  "@context": [
+    "http://azureiot.com/v1/contexts/IoTModel.json"
+  ]
+}

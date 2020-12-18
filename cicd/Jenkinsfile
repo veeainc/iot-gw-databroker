@@ -1,0 +1,405 @@
+pipeline {
+    agent { label "veea-cicd-slave" }
+
+    environment {
+        PATH = "/opt/veea/vht/bin:/opt/veea/tools/bin:${env.PATH}"
+        VHC_05_EXTERNAL_IP = "103.7.129.174"
+        VHC_05_INTERNAL_IP = "192.168.200.34"
+        VHC_05_HUB_ID = "C05BCB00C0A000004324"
+        VHC_05_CMD_HUB_ID = "100"
+        VHC_05_EXTERNAL_PORT_START = "51"
+        APP_VHC_05_URL = "http://103.7.129.174:51482/"
+        DATABROKER_VERSION= "2.0.1"
+
+        VHX_09_EXTERNAL_IP = "103.7.129.174"
+        VHX_09_INTERNAL_IP = "192.168.200.33"
+        VHX_09_HUB_ID = "E09CCW00C0B000001123"
+        VHX_09_CMD_HUB_ID = "400"
+        VHX_09_EXTERNAL_PORT_START = "51"
+        APP_VHX_09_URL = "http://103.7.129.174:51382/"
+
+        }
+
+    options {
+        buildDiscarder(logRotator(artifactDaysToKeepStr: '3', artifactNumToKeepStr: '3', daysToKeepStr: '3', numToKeepStr: '3'))
+        disableConcurrentBuilds()
+        timestamps()
+    }
+    triggers {
+        cron '''TZ=Asia/Kolkata
+H 23 * * *'''
+    }
+    stages {
+        // ------------------------------------------------------------
+        //   Stage Prerequisite
+        //
+        //   Tasks
+        //     - Check and install VHC prerequisite environment ready for building
+        // ------------------------------------------------------------
+        stage('Build - prerequisite') {
+            steps {
+                script {
+                    try {
+                        sh "vhc version"
+                        sh "sudo apt install -y jq"
+                    } catch (err) {
+                        echo "Ignoring errors for prerequisite validation"
+                        currentBuild.result = "FAILURE"
+                        error "Caught ${err.toString()}"
+                    }
+                    try {
+                        sh "vhc hub --remove-hub ${env.VHC_05_CMD_HUB_ID}"
+                        sh "vhc hub --remove-hub ${env.VHX_09_CMD_HUB_ID}"
+                        echo "Clearing entries for ${env.VHC_05_INTERNAL_IP} ${env.VHC_05_HUB_ID} ${env.VHC_05_EXTERNAL_IP}"
+                        sh "sudo iptables -t nat -D OUTPUT -p tcp -d ${env.VHC_05_INTERNAL_IP} --dport 9500 -j DNAT --to-destination ${env.VHC_05_EXTERNAL_IP}:${env.VHC_05_EXTERNAL_PORT_START}483"
+                        sh "sudo iptables -t nat -D OUTPUT -p tcp -d ${env.VHC_05_INTERNAL_IP} --dport 9060 -j DNAT --to-destination ${env.VHC_05_EXTERNAL_IP}:${env.VHC_05_EXTERNAL_PORT_START}482"
+                        sh "sudo iptables -t nat -D OUTPUT -p tcp -d ${env.VHC_05_INTERNAL_IP} --dport 9079 -j DNAT --to-destination ${env.VHC_05_EXTERNAL_IP}:${env.VHC_05_EXTERNAL_PORT_START}481"
+                        sh "sudo iptables -t nat -D OUTPUT -p tcp -d ${env.VHC_05_INTERNAL_IP} --dport 80 -j DNAT --to-destination ${env.VHC_05_EXTERNAL_IP}:${env.VHC_05_EXTERNAL_PORT_START}480"
+                        sh "sudo iptables -t nat -D OUTPUT -p tcp -d ${env.VHC_05_INTERNAL_IP} --dport 8080 -j DNAT --to-destination ${env.VHC_05_EXTERNAL_IP}:${env.VHC_05_EXTERNAL_PORT_START}484"
+                        sh "sudo iptables -t nat -D OUTPUT -p tcp -d ${env.VHC_05_INTERNAL_IP} --dport 9090 -j DNAT --to-destination ${env.VHC_05_EXTERNAL_IP}:${env.VHC_05_EXTERNAL_PORT_START}485"
+                        sh "sudo iptables -t nat -D OUTPUT -p tcp -d ${env.VHC_05_INTERNAL_IP} --dport 9000 -j DNAT --to-destination ${env.VHC_05_EXTERNAL_IP}:${env.VHC_05_EXTERNAL_PORT_START}486"
+
+                        echo "Clearing entries for ${env.VHX_09_INTERNAL_IP} ${env.VHX_09_HUB_ID} ${env.VHX_09_EXTERNAL_IP}"
+                        sh "sudo iptables -t nat -D OUTPUT -p tcp -d ${env.VHX_09_INTERNAL_IP} --dport 9500 -j DNAT --to-destination ${env.VHX_09_EXTERNAL_IP}:${env.VHX_09_EXTERNAL_PORT_START}383"
+                        sh "sudo iptables -t nat -D OUTPUT -p tcp -d ${env.VHX_09_INTERNAL_IP} --dport 9060 -j DNAT --to-destination ${env.VHX_09_EXTERNAL_IP}:${env.VHX_09_EXTERNAL_PORT_START}382"
+                        sh "sudo iptables -t nat -D OUTPUT -p tcp -d ${env.VHX_09_INTERNAL_IP} --dport 9079 -j DNAT --to-destination ${env.VHX_09_EXTERNAL_IP}:${env.VHX_09_EXTERNAL_PORT_START}381"
+                        sh "sudo iptables -t nat -D OUTPUT -p tcp -d ${env.VHX_09_INTERNAL_IP} --dport 80 -j DNAT --to-destination ${env.VHX_09_EXTERNAL_IP}:${env.VHX_09_EXTERNAL_PORT_START}380"
+                        sh "sudo iptables -t nat -D OUTPUT -p tcp -d ${env.VHX_09_INTERNAL_IP} --dport 8080 -j DNAT --to-destination ${env.VHX_09_EXTERNAL_IP}:${env.VHX_09_EXTERNAL_PORT_START}384"
+                        sh "sudo iptables -t nat -D OUTPUT -p tcp -d ${env.VHX_09_INTERNAL_IP} --dport 9090 -j DNAT --to-destination ${env.VHX_09_EXTERNAL_IP}:${env.VHX_09_EXTERNAL_PORT_START}385"
+                        sh "sudo iptables -t nat -D OUTPUT -p tcp -d ${env.VHX_09_INTERNAL_IP} --dport 9090 -j DNAT --to-destination ${env.VHX_09_EXTERNAL_IP}:${env.VHX_09_EXTERNAL_PORT_START}386"
+
+                        sh "sudo iptables -t nat --list-rules"
+                    } catch (err) {
+                        echo "Ignoring errors for prerequisite validation"
+                    }
+                }
+            }
+        }
+        // ------------------------------------------------------------
+        //   Stage Checkout
+        //
+        //   Tasks
+        //     - git checkout the code with clean workspace
+        // ------------------------------------------------------------
+        stage('Checkout') {
+            steps {
+                cleanWs()
+                checkout scm
+            }
+        }
+        // ------------------------------------------------------------
+        //   Stage Build - vhc05
+        //
+        //   Tasks
+        //     - Build databroker for vhc05
+        // ------------------------------------------------------------
+        stage('Build - vhc05') {
+            steps {
+                dir('databroker') {
+                   sh "vhc build --target vhc05 --unsigned"
+                }
+            }
+        }
+        // ------------------------------------------------------------
+        //   Stage Build - vhx09-10
+        //
+        //   Tasks
+        //     - Build databroker for vhx09-10
+        // ------------------------------------------------------------
+        stage('Build - vhx09-10') {
+            steps {
+                dir('databroker') {
+                   sh "vhc build --target vhx09-10 --unsigned"
+                }
+            }
+        }
+        // ------------------------------------------------------------
+        //   Stage Deploy - Prerequisite
+        //
+        //   Tasks
+        //     - Prepare environment for Deployment
+        // ------------------------------------------------------------
+        stage('Deploy - Prerequisite') {
+            steps {
+                sh "sudo sysctl net.ipv4.ip_forward=1"
+                echo "Adding entries for ${env.VHC_05_INTERNAL_IP} ${env.VHC_05_HUB_ID} ${env.VHC_05_EXTERNAL_IP}"
+                sh "sudo iptables -t nat -A OUTPUT -p tcp -d ${env.VHC_05_INTERNAL_IP} --dport 9500 -j DNAT --to-destination ${env.VHC_05_EXTERNAL_IP}:${env.VHC_05_EXTERNAL_PORT_START}483"
+                sh "sudo iptables -t nat -A OUTPUT -p tcp -d ${env.VHC_05_INTERNAL_IP} --dport 9060 -j DNAT --to-destination ${env.VHC_05_EXTERNAL_IP}:${env.VHC_05_EXTERNAL_PORT_START}482"
+                sh "sudo iptables -t nat -A OUTPUT -p tcp -d ${env.VHC_05_INTERNAL_IP} --dport 9079 -j DNAT --to-destination ${env.VHC_05_EXTERNAL_IP}:${env.VHC_05_EXTERNAL_PORT_START}481"
+                sh "sudo iptables -t nat -A OUTPUT -p tcp -d ${env.VHC_05_INTERNAL_IP} --dport 80 -j DNAT --to-destination ${env.VHC_05_EXTERNAL_IP}:${env.VHC_05_EXTERNAL_PORT_START}480"
+                sh "sudo iptables -t nat -A OUTPUT -p tcp -d ${env.VHC_05_INTERNAL_IP} --dport 8080 -j DNAT --to-destination ${env.VHC_05_EXTERNAL_IP}:${env.VHC_05_EXTERNAL_PORT_START}484"
+                sh "sudo iptables -t nat -A OUTPUT -p tcp -d ${env.VHC_05_INTERNAL_IP} --dport 9090 -j DNAT --to-destination ${env.VHC_05_EXTERNAL_IP}:${env.VHC_05_EXTERNAL_PORT_START}485"
+                sh "sudo iptables -t nat -A OUTPUT -p tcp -d ${env.VHC_05_INTERNAL_IP} --dport 9000 -j DNAT --to-destination ${env.VHC_05_EXTERNAL_IP}:${env.VHC_05_EXTERNAL_PORT_START}486"
+
+                echo "Adding entries for ${env.VHX_09_INTERNAL_IP} ${env.VHX_09_HUB_ID} ${env.VHX_09_EXTERNAL_IP}"
+                sh "sudo iptables -t nat -A OUTPUT -p tcp -d ${env.VHX_09_INTERNAL_IP} --dport 9500 -j DNAT --to-destination ${env.VHX_09_EXTERNAL_IP}:${env.VHX_09_EXTERNAL_PORT_START}383"
+                sh "sudo iptables -t nat -A OUTPUT -p tcp -d ${env.VHX_09_INTERNAL_IP} --dport 9060 -j DNAT --to-destination ${env.VHX_09_EXTERNAL_IP}:${env.VHX_09_EXTERNAL_PORT_START}382"
+                sh "sudo iptables -t nat -A OUTPUT -p tcp -d ${env.VHX_09_INTERNAL_IP} --dport 9079 -j DNAT --to-destination ${env.VHX_09_EXTERNAL_IP}:${env.VHX_09_EXTERNAL_PORT_START}381"
+                sh "sudo iptables -t nat -A OUTPUT -p tcp -d ${env.VHX_09_INTERNAL_IP} --dport 80 -j DNAT --to-destination ${env.VHX_09_EXTERNAL_IP}:${env.VHX_09_EXTERNAL_PORT_START}380"
+                sh "sudo iptables -t nat -A OUTPUT -p tcp -d ${env.VHX_09_INTERNAL_IP} --dport 8080 -j DNAT --to-destination ${env.VHX_09_EXTERNAL_IP}:${env.VHX_09_EXTERNAL_PORT_START}384"
+                sh "sudo iptables -t nat -A OUTPUT -p tcp -d ${env.VHX_09_INTERNAL_IP} --dport 9090 -j DNAT --to-destination ${env.VHX_09_EXTERNAL_IP}:${env.VHX_09_EXTERNAL_PORT_START}385"
+                sh "sudo iptables -t nat -A OUTPUT -p tcp -d ${env.VHX_09_INTERNAL_IP} --dport 9000 -j DNAT --to-destination ${env.VHX_09_EXTERNAL_IP}:${env.VHX_09_EXTERNAL_PORT_START}386"
+
+                sh "sudo iptables -t nat --list-rules"
+            }
+        }
+        // ------------------------------------------------------------
+        //   Stage Deploy (cleanup)- vhc05
+        //
+        //   Tasks
+        //     - Clean hub for vhc05 deployment
+        // ------------------------------------------------------------
+        stage('Deploy (HUB cleanup) - vhc05') {
+            steps {
+                dir('databroker') {
+                    script {
+                        sh "vhc hub --add-hub ${env.VHC_05_CMD_HUB_ID}:${env.VHC_05_HUB_ID}:${env.VHC_05_INTERNAL_IP}"
+                        def CONTAINERS_RESPONSE = sh (
+                            script: "vhc hub container --get-containers --hub-id ${env.VHC_05_CMD_HUB_ID} > response.log && cat response.log | tail -n +2 | jq .containers[]",
+                            returnStdout: true
+                            ).trim()
+                        def CONTAINERS = CONTAINERS_RESPONSE.split("\\n")
+                        for (CONTAINER_ID in CONTAINERS) {
+                            CONTAINER_ID = CONTAINER_ID.trim()
+                            if ("$CONTAINER_ID" != "") {
+                                echo "CONTAINER_ID :  $CONTAINER_ID"
+                                def CONTAINER_NAME = sh (
+                                    script: "vhc hub container --get-info $CONTAINER_ID  --hub-id ${env.VHC_05_CMD_HUB_ID} | tail -n +2 | jq '.container.Config.Labels.\"com.veea.vhc.app.name\"'",
+                                    returnStdout: true
+                                    ).trim()
+                                echo "CONTAINER_NAME : $CONTAINER_NAME"
+                                if ("$CONTAINER_NAME" == "\"databroker\"") {
+                                    def CONTAINER_IMAGE_ID = sh (
+                                        script: "vhc hub container --get-info $CONTAINER_ID  --hub-id ${env.VHC_05_CMD_HUB_ID} | tail -n +2 | jq .container.Config.Image",
+                                        returnStdout: true
+                                        ).trim()
+                                    sh "vhc hub container --stop $CONTAINER_ID --hub-id ${env.VHC_05_CMD_HUB_ID}"
+                                    sh "vhc hub container --delete $CONTAINER_ID --force --hub-id ${env.VHC_05_CMD_HUB_ID}"
+                                    sh "vhc hub image --delete $CONTAINER_IMAGE_ID --force --hub-id ${env.VHC_05_CMD_HUB_ID}"
+                                }
+                            }
+                        }
+
+                        sh "vhc hub --remove-hub ${env.VHC_05_CMD_HUB_ID}"
+                    }
+                }
+            }
+        }
+        // ------------------------------------------------------------
+        //   Stage Deploy - vhc05
+        //
+        //   Tasks
+        //     - Deploy databroker to hub for vhc05
+        // ------------------------------------------------------------
+        stage('Deploy - vhc05') {
+            steps {
+                dir('databroker') {
+                    script {
+                        sh "vhc hub --add-hub ${env.VHC_05_CMD_HUB_ID}:${env.VHC_05_HUB_ID}:${env.VHC_05_INTERNAL_IP}"
+                        def VHC_05_IMAGE_ID = sh (
+                            script: "vhc hub image --create bin/databroker-armhf:${DATABROKER_VERSION}.tar --hub-id ${env.VHC_05_CMD_HUB_ID} > response.log && grep image_id response.log | awk '{print \$2}' | tr -d '}'",
+                            returnStdout: true
+                            ).trim()
+                        echo "IMAGE_ID : $VHC_05_IMAGE_ID"
+
+                        def VHC_05_CONTAINER_ID = sh (
+                            script: "vhc hub image --create-container $VHC_05_IMAGE_ID --hub-id ${env.VHC_05_CMD_HUB_ID} > response.log && grep container_id response.log | awk '{print \$2}' | tr -d ','",
+                            returnStdout: true
+                            ).trim()
+                        echo "container_id : $VHC_05_CONTAINER_ID"
+
+                        def VHC_05_CONTAINER_START = sh (
+                            script: "vhc hub container --start $VHC_05_CONTAINER_ID --hub-id ${env.VHC_05_CMD_HUB_ID}",
+                            returnStdout: true
+                            ).trim()
+                        echo "VHC_05_CONTAINER_START : $VHC_05_CONTAINER_START"
+
+                        def VHC_05_CONTAINER_STATUS = sh (
+                            script: "vhc hub container --get-status $VHC_05_CONTAINER_ID --hub-id ${env.VHC_05_CMD_HUB_ID}",
+                            returnStdout: true
+                            ).trim()
+                        echo "VHC_05_CONTAINER_STATUS : $VHC_05_CONTAINER_STATUS"
+
+                        sh "vhc hub --remove-hub ${env.VHC_05_CMD_HUB_ID}"
+                    }
+                }
+            }
+        }
+
+        // ------------------------------------------------------------
+        //   Stage Deploy (cleanup)- vhx09-10
+        //
+        //   Tasks
+        //     - Clean hub for vhx09-10 deployment
+        // ------------------------------------------------------------
+        stage('Deploy (HUB cleanup) - vhx09-10') {
+            steps {
+                dir('databroker') {
+                    script {
+                        sh "vhc hub --add-hub ${env.VHX_09_CMD_HUB_ID}:${env.VHX_09_HUB_ID}:${env.VHX_09_INTERNAL_IP}"
+                        def CONTAINERS_RESPONSE = sh (
+                            script: "vhc hub container --get-containers --hub-id ${env.VHX_09_CMD_HUB_ID} > response.log && cat response.log | tail -n +2 | jq .containers[]",
+                            returnStdout: true
+                            ).trim()
+                        def CONTAINERS = CONTAINERS_RESPONSE.split("\\n")
+                        for (CONTAINER_ID in CONTAINERS) {
+                            CONTAINER_ID = CONTAINER_ID.trim()
+                            if ("$CONTAINER_ID" != "") {
+                                echo "CONTAINER_ID :  $CONTAINER_ID"
+                                def CONTAINER_NAME = sh (
+                                    script: "vhc hub container --get-info $CONTAINER_ID  --hub-id ${env.VHX_09_CMD_HUB_ID} | tail -n +2 | jq '.container.Config.Labels.\"com.veea.vhc.app.name\"'",
+                                    returnStdout: true
+                                    ).trim()
+                                echo "CONTAINER_NAME : $CONTAINER_NAME"
+                                if ("$CONTAINER_NAME" == "\"databroker\"") {
+                                    def CONTAINER_IMAGE_ID = sh (
+                                        script: "vhc hub container --get-info $CONTAINER_ID  --hub-id ${env.VHX_09_CMD_HUB_ID} | tail -n +2 | jq .container.Config.Image",
+                                        returnStdout: true
+                                        ).trim()
+                                    sh "vhc hub container --stop $CONTAINER_ID --hub-id ${env.VHX_09_CMD_HUB_ID}"
+                                    sh "vhc hub container --delete $CONTAINER_ID --force --hub-id ${env.VHX_09_CMD_HUB_ID}"
+                                    sh "vhc hub image --delete $CONTAINER_IMAGE_ID --force --hub-id ${env.VHX_09_CMD_HUB_ID}"
+                                }
+                            }
+                        }
+                        sh "vhc hub --remove-hub ${env.VHX_09_CMD_HUB_ID}"
+                    }
+                }
+            }
+        }
+        // ------------------------------------------------------------
+        //   Stage Deploy - vhx09-10
+        //
+        //   Tasks
+        //     - Deploy databroker to hub for vhx09-10
+        // ------------------------------------------------------------
+        stage('Deploy - vhx09-10') {
+            steps {
+                dir('databroker') {
+                    script {
+                        sh "vhc hub --add-hub ${env.VHX_09_CMD_HUB_ID}:${env.VHX_09_HUB_ID}:${env.VHX_09_INTERNAL_IP}"
+                        def VHX_09_IMAGE_ID = sh (
+                            script: "vhc hub image --create bin/databroker-arm64v8:${DATABROKER_VERSION}.tar --hub-id ${env.VHX_09_CMD_HUB_ID} > response.log && grep image_id response.log | awk '{print \$2}' | tr -d '}'",
+                            returnStdout: true
+                            ).trim()
+                        echo "IMAGE_ID : $VHX_09_IMAGE_ID"
+
+                        def VHX_09_CONTAINER_ID = sh (
+                            script: "vhc hub image --create-container $VHX_09_IMAGE_ID --hub-id ${env.VHX_09_CMD_HUB_ID} > response.log && grep container_id response.log | awk '{print \$2}' | tr -d ','",
+                            returnStdout: true
+                            ).trim()
+                        echo "container_id : $VHX_09_CONTAINER_ID"
+
+                        def VHX_09_CONTAINER_START = sh (
+                            script: "vhc hub container --start $VHX_09_CONTAINER_ID --hub-id ${env.VHX_09_CMD_HUB_ID}",
+                            returnStdout: true
+                            ).trim()
+                        echo "VHX_09_CONTAINER_START : $VHX_09_CONTAINER_START"
+
+                        def VHX_09_CONTAINER_STATUS = sh (
+                                script: "vhc hub container --get-status $VHX_09_CONTAINER_ID --hub-id ${env.VHX_09_CMD_HUB_ID}",
+                            returnStdout: true
+                            ).trim()
+                        echo "VHX_09_CONTAINER_STATUS : $VHX_09_CONTAINER_STATUS"
+
+                        sh "vhc hub --remove-hub ${env.VHX_09_CMD_HUB_ID}"
+                    }
+                }
+            }
+        }
+        // ------------------------------------------------------------
+        //   Stage Deploy - Cleanup
+        //
+        //   Tasks
+        //     - Cleanup environment after Deployment
+        // ------------------------------------------------------------
+        stage('Deploy - Cleanup') {
+            steps {
+                  echo "Clearing entries for ${env.VHC_05_INTERNAL_IP} ${env.VHC_05_HUB_ID} ${env.VHC_05_EXTERNAL_IP}"
+                  sh "sudo iptables -t nat -D OUTPUT -p tcp -d ${env.VHC_05_INTERNAL_IP} --dport 9500 -j DNAT --to-destination ${env.VHC_05_EXTERNAL_IP}:${env.VHC_05_EXTERNAL_PORT_START}483"
+                  sh "sudo iptables -t nat -D OUTPUT -p tcp -d ${env.VHC_05_INTERNAL_IP} --dport 9060 -j DNAT --to-destination ${env.VHC_05_EXTERNAL_IP}:${env.VHC_05_EXTERNAL_PORT_START}482"
+                  sh "sudo iptables -t nat -D OUTPUT -p tcp -d ${env.VHC_05_INTERNAL_IP} --dport 9079 -j DNAT --to-destination ${env.VHC_05_EXTERNAL_IP}:${env.VHC_05_EXTERNAL_PORT_START}481"
+                  sh "sudo iptables -t nat -D OUTPUT -p tcp -d ${env.VHC_05_INTERNAL_IP} --dport 80 -j DNAT --to-destination ${env.VHC_05_EXTERNAL_IP}:${env.VHC_05_EXTERNAL_PORT_START}480"
+                  sh "sudo iptables -t nat -D OUTPUT -p tcp -d ${env.VHC_05_INTERNAL_IP} --dport 8080 -j DNAT --to-destination ${env.VHC_05_EXTERNAL_IP}:${env.VHC_05_EXTERNAL_PORT_START}484"
+                  sh "sudo iptables -t nat -D OUTPUT -p tcp -d ${env.VHC_05_INTERNAL_IP} --dport 9090 -j DNAT --to-destination ${env.VHC_05_EXTERNAL_IP}:${env.VHC_05_EXTERNAL_PORT_START}485"
+                  sh "sudo iptables -t nat -D OUTPUT -p tcp -d ${env.VHC_05_INTERNAL_IP} --dport 9000 -j DNAT --to-destination ${env.VHC_05_EXTERNAL_IP}:${env.VHC_05_EXTERNAL_PORT_START}486"
+
+                  echo "Clearing entries for ${env.VHX_09_INTERNAL_IP} ${env.VHX_09_HUB_ID} ${env.VHX_09_EXTERNAL_IP}"
+                  sh "sudo iptables -t nat -D OUTPUT -p tcp -d ${env.VHX_09_INTERNAL_IP} --dport 9500 -j DNAT --to-destination ${env.VHX_09_EXTERNAL_IP}:${env.VHX_09_EXTERNAL_PORT_START}383"
+                  sh "sudo iptables -t nat -D OUTPUT -p tcp -d ${env.VHX_09_INTERNAL_IP} --dport 9060 -j DNAT --to-destination ${env.VHX_09_EXTERNAL_IP}:${env.VHX_09_EXTERNAL_PORT_START}382"
+                  sh "sudo iptables -t nat -D OUTPUT -p tcp -d ${env.VHX_09_INTERNAL_IP} --dport 9079 -j DNAT --to-destination ${env.VHX_09_EXTERNAL_IP}:${env.VHX_09_EXTERNAL_PORT_START}381"
+                  sh "sudo iptables -t nat -D OUTPUT -p tcp -d ${env.VHX_09_INTERNAL_IP} --dport 80 -j DNAT --to-destination ${env.VHX_09_EXTERNAL_IP}:${env.VHX_09_EXTERNAL_PORT_START}380"
+                  sh "sudo iptables -t nat -D OUTPUT -p tcp -d ${env.VHX_09_INTERNAL_IP} --dport 8080 -j DNAT --to-destination ${env.VHX_09_EXTERNAL_IP}:${env.VHX_09_EXTERNAL_PORT_START}384"
+                  sh "sudo iptables -t nat -D OUTPUT -p tcp -d ${env.VHX_09_INTERNAL_IP} --dport 9090 -j DNAT --to-destination ${env.VHX_09_EXTERNAL_IP}:${env.VHX_09_EXTERNAL_PORT_START}385"
+                  sh "sudo iptables -t nat -D OUTPUT -p tcp -d ${env.VHX_09_INTERNAL_IP} --dport 9000 -j DNAT --to-destination ${env.VHX_09_EXTERNAL_IP}:${env.VHX_09_EXTERNAL_PORT_START}386"
+
+                sh "sudo iptables -t nat --list-rules"
+            }
+        }
+        // ------------------------------------------------------------
+        //   Stage Validate - vhc05
+        //
+        //   Tasks
+        //     - Validate vhc05 build after Deployment
+        // ------------------------------------------------------------
+        stage('Validate - vhc05') {
+            steps {
+                script {
+                    def BRANCH = "${env.GIT_BRANCH}".replace("origin/","")
+                    echo "branch : $BRANCH"
+                    git branch: "$BRANCH", credentialsId: 'matellio-cicd', url: 'https://bitbucket.org/veea/veea-infrastructure.git'
+                    sh "sudo pip3 install -r resources/requirements.txt"
+                    env.API_URL = "${env.APP_VHC_05_URL}"
+                    sh "robot test_scripts/test1_apitest.robot"
+                }
+            }
+        }
+        // ------------------------------------------------------------
+        //   Stage Validate - vhx09-10
+        //
+        //   Tasks
+        //     - Validate vhx09-10 build after Deployment
+        // ------------------------------------------------------------
+        stage('Validate - vhx09-10') {
+            steps {
+                script {
+                    def BRANCH = "${env.GIT_BRANCH}".replace("origin/","")
+                    echo "branch : $BRANCH"
+                    git branch: "$BRANCH", credentialsId: 'matellio-cicd', url: 'https://bitbucket.org/veea/veea-infrastructure.git'
+                    sh "sudo pip3 install -r resources/requirements.txt"
+                    env.API_URL = "${env.APP_VHX_09_URL}"
+                    sh "robot test_scripts/test1_apitest.robot"
+                }
+            }
+        }
+        // ------------------------------------------------------------
+        //   Stage Post Trigger - zigbeemanager
+        //
+        //   Tasks
+        //     - Trigger zigbeemanager build after Deployment
+        // ------------------------------------------------------------
+
+            stage('Post Trigger- Email Notification'){
+            steps {
+               emailext attachLog: true, body:
+               """<p>EXECUTED: Job <b> ${env.JOB_NAME}:${env.BUILD_NUMBER}
+               </b></p><p>View console output at "<a href="${env.BUILD_URL}">
+               ${env.JOB_NAME}:${env.BUILD_NUMBER}</a>"</p>
+                 <p><i>(Build log is attached.)</i></p>""",
+                compressLog: true,
+
+                recipientProviders: [[$class: 'DevelopersRecipientProvider'],
+                [$class: 'RequesterRecipientProvider']],
+                replyTo: 'veea-test-automation@no-reply.com',
+                subject: "Veea Data Broker Build -Status: ${currentBuild.result?:'SUCCESS'} - Job ${env.JOB_NAME}:${env.BUILD_NUMBER}",
+                to: 'vikas.jain@matellio.com'
+            }
+         }
+
+         stage('Post Trigger - zigbeemanager') {
+             steps {
+                 build job: 'veea-build-zigbeemanager', propagate: false, wait: false
+             }
+         }
+     }
+ }
